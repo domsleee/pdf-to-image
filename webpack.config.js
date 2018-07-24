@@ -12,5 +12,16 @@ module.exports = {
     path: path.join(__dirname, './dist/js'),
     publicPath: './dist/js',
     filename: '[name].bundle.js'
+  },
+  watch: true,
+  module: {
+    rules: [
+    {
+      test: /\.css$/,
+      use: [
+        { loader: "style-loader" },
+        { loader: "css-loader" }
+      ]
+    }]
   }
 };

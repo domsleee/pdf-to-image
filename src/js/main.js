@@ -1,5 +1,6 @@
 var Dropbox = require('./dropbox');
 var Img = require('./img');
+import style from '../css/main.css';
 
 document.addEventListener('DOMContentLoaded', function(){
     var drop = new Dropbox(document.getElementById('dropbox'));

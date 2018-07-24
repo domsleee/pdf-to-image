@@ -72,7 +72,7 @@ var Img = (function() {
         });
     }
 
-    // calls `add_image` for every `m`th page in range [`start`, `end`],
+    // calls `add_image` for every `k`th page in range [`start`, `end`],
     // calling `finished` on completion
     var Worker = function(start, end, k, img, add_image, finished) {
         this.start = start;
