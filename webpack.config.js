@@ -9,8 +9,8 @@ module.exports = {
   },
   mode: 'none',
   output: {
-    path: path.join(__dirname, './dist/js'),
-    publicPath: './dist/js',
+    path: path.join(__dirname, '/dist/js'),
+    publicPath: '/dist/js',
     filename: '[name].bundle.js'
   },
   module: {
