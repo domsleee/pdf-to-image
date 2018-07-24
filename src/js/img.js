@@ -2,12 +2,14 @@ var Img = (function() {
     // browserify workaround?? not compressed (I think?)
     (typeof window !== 'undefined' ? window : {}).pdfjsWorker = require('pdfjs-dist/build/pdf.worker');
     var Pdfjs = require('pdfjs-dist');
+    //Pdfjs.disableWorker = false;
     var JSZip = require('jszip');
     var FileSaver = require('file-saver');
     Pdfjs.workerSrc = require('pdfjs-dist/build/pdf.worker.js');
     var a = document.createElement('a');
     var SCALE = 2;
     var WORKERS = 1;
+    var rem = 0;
 
     var Img = function(el) {
         this._el = el; // button
@@ -45,55 +47,63 @@ var Img = (function() {
             if (_this.pdf_doc === false) {
                 throw new Error('pdf_doc must be loaded before downloading...');
             }
-            var pages = [];
-            window.pages = pages;
             var numPages = _this.pdf_doc.numPages;
             var rem = numPages;
-            function addPage(i, end, interval, canvas, ctx) {
-                _this.pdf_doc.getPage(i).then(function(page) {
-                    var viewport = page.getViewport(SCALE);
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    var renderContext = {
-                        canvasContext: ctx,
-                        viewport: viewport,
-                    };
-                    page.render(renderContext).then(function() {
-                        pages[i-1] = canvas.toDataURL('image/jpg', 0.92);
-                        rem -= 1;
-                        _this.change_button(false, rem);
-                        $(a).attr('href', pages[i-1]).attr('download', 'page'+i+'.jpg');
-                        zip.file('page'+i+'.jpg', pages[i-1].split('base64,')[1], {base64: true});
-                        //document.body.appendChild(a);
-                        //a.click();
-                        //document.body.removeChild(a);
-                        //canvas.width = canvas.height = 0;
-                        if (i+interval <= end) addPage(i+interval, end, WORKERS, canvas, ctx);
-                        else workerDone();
-                    });
-                });
-            }
-
             _this.change_button(false, rem);
-            Pdfjs.disableWorker = true;
-            workersRunning = 0;
+            workers_running = 0;
             for (var i = 1; i <= WORKERS; i++) {
-                if (i < numPages) {
-                    workersRunning += 1;
-                    var canvas = document.createElement('canvas');
-                    var ctx = canvas.getContext('2d');
-                    addPage(i, numPages, WORKERS, canvas, ctx);
-                }
+                workers_running += 1;
+                worker = new Worker(i, numPages, WORKERS, _this, worker_add_image, worker_done);
+                worker.add_all_pages();
             }
-            function workerDone() {
-                workersRunning--;
-                if (workersRunning === 0) {
+            function worker_add_image(i, url) {
+                rem -= 1;
+                _this.change_button(false, rem);
+                zip.file(i+'.jpg', url.split('base64,')[1], {base64: true});
+            }
+            function worker_done() {
+                workers_running--;
+                if (workers_running === 0) {
                     _this.change_button(false, 'Upload file.');
                     zip.generateAsync({type:"blob"}).then(function(content) {
                         FileSaver.saveAs(content, "images.zip");
                     });
                 }
             }
+        });
+    }
+
+    // calls `add_image` for every `m`th page in range [`start`, `end`],
+    // calling `finished` on completion
+    var Worker = function(start, end, k, img, add_image, finished) {
+        this.start = start;
+        this.end = end;
+        this.k = k;
+        this.finished = finished;
+        this.add_image = add_image;
+        this.pdf_doc = img.pdf_doc;
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d');
+    }
+    Worker.prototype.add_all_pages = function() {
+        this._add_page(this.start);
+    }
+    Worker.prototype._add_page = function(i) {
+        if (i > this.end) { this.finished(); return; }
+        var _this = this;
+        this.pdf_doc.getPage(i).then(function(page) {
+            var viewport = page.getViewport(SCALE);
+            _this.canvas.width = viewport.width;
+            _this.canvas.height = viewport.height;
+            var renderContext = {
+                canvasContext: _this.ctx,
+                viewport: viewport,
+            };
+            page.render(renderContext).then(function() {
+                var url = _this.canvas.toDataURL('image/jpg', 0.92);
+                _this.add_image(i, url);
+                _this._add_page(i+_this.k);
+            });
         });
     };
     return Img;
