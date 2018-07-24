@@ -1,11 +1,10 @@
 var Img = (function() {
-    // browserify workaround?? not compressed (I think?)
-    (typeof window !== 'undefined' ? window : {}).pdfjsWorker = require('pdfjs-dist/build/pdf.worker');
     var Pdfjs = require('pdfjs-dist');
+    Pdfjs.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.bundle.js';
+
     //Pdfjs.disableWorker = false;
     var JSZip = require('jszip');
     var FileSaver = require('file-saver');
-    Pdfjs.workerSrc = require('pdfjs-dist/build/pdf.worker.js');
     var a = document.createElement('a');
     var SCALE = 2;
     var WORKERS = 1;
