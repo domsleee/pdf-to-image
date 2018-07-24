@@ -12,6 +12,6 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-shell": "^2.1.0",
     "jszip": "^3.1.5",
-    "pdfjs-dist": "^2.0.489",
+    "pdfjs-dist": "^2.0.489"
   }
 }
