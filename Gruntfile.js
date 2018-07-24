@@ -21,7 +21,7 @@ module.exports = function(grunt) {
     shell: {
       deploy: {
         command: "git add -f dist/js/bundle.js && git commit -m 'add bundle.js' &&\
-                  git subtree push --force --prefix dist origin gh-pages && \
+                  git push origin `git subtree split --prefix dist`:gh-pages --force &&\
                   git reset --hard HEAD~"
       }
     },
