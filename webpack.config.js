@@ -13,7 +13,6 @@ module.exports = {
     publicPath: './dist/js',
     filename: '[name].bundle.js'
   },
-  watch: true,
   module: {
     rules: [
     {

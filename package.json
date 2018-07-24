@@ -16,6 +16,6 @@
   },
   "scripts": {
     "deploy": "npx webpack --mode production && git add -f dist/js/{main,pdf.worker}.bundle.js && git commit -m 'add files' && git push origin `git subtree split --prefix dist`:gh-pages --force && git reset --hard HEAD~",
-    "run": "npx webpack-dev-server --content-base dist"
+    "build": "npx webpack-dev-server --content-base dist --watch"
   }
 }
